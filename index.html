@@ -16,14 +16,12 @@
 
     <div
         class="w-[440px] min-w-[440px] panel-bg flex flex-col z-10 h-full overflow-y-auto relative text-slate-100 shadow-2xl">
-
         <div class="px-6 py-6 border-b border-slate-700 bg-slate-900 flex items-baseline gap-2">
             <h1 class="text-3xl font-bold tracking-wider text-white uppercase">Astro</h1>
             <h1 class="text-3xl font-bold tracking-wider text-blue-400 uppercase">Gears</h1>
         </div>
 
         <div class="p-6 flex flex-col gap-6 flex-1">
-
             <div id="collision-warning" style="display: none;"
                 class="bg-red-900/80 border border-red-500 text-red-100 p-3 rounded-lg shadow-lg flex items-start gap-3 transition-opacity">
                 <span class="text-xl">⚠️</span>
@@ -72,7 +70,6 @@
             <div id="panel-connection"
                 class="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50 transition-opacity">
                 <div class="section-title !border-none !mb-4">Connection Properties</div>
-
                 <div class="property-row">
                     <label class="property-label">Parent Gear #:</label>
                     <div class="property-control">
@@ -107,7 +104,6 @@
             <div id="panel-properties"
                 class="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50 transition-opacity">
                 <div class="section-title !border-none !mb-4">Gear Properties</div>
-
                 <div class="property-row">
                     <label class="property-label">Internal Gear:</label>
                     <div class="property-control"><input type="checkbox" id="input-internal"></div>
@@ -127,7 +123,6 @@
                         <input type="number" id="input-pitch" min="0.5" step="0.5" class="ui-input !w-24 text-center">
                     </div>
                 </div>
-
                 <div class="property-row opacity-60 mt-2 border-t border-slate-700 pt-3">
                     <label class="property-label">Pitch Diameter (D):</label>
                     <div class="property-control">
@@ -156,7 +151,6 @@
                     <label class="property-label">Show Gear Labels:</label>
                     <div class="property-control"><input type="checkbox" id="toggle-labels" checked></div>
                 </div>
-
                 <div class="mt-6 flex gap-2">
                     <button class="ui-btn flex-1 bg-slate-700 hover:bg-slate-600" onclick="mockDownload('obj')">Download
                         3D OBJ</button>
@@ -189,7 +183,7 @@
     </div>
 
     <div style="display: none;"
-        class="opacity-90 text-blue-200 opacity-70 opacity-50 pointer-events-none text-amber-400 text-rose-400 text-emerald-400 text-blue-300 text-purple-400 font-mono text-xs font-bold border-b border-slate-700 pb-2 mb-3 uppercase tracking-widest text-blue-400 text-[10px] text-slate-400 tracking-wider mb-1 flex justify-between text-sm">
+        class="opacity-90 text-blue-200 opacity-70 opacity-50 pointer-events-none text-amber-400 text-rose-400 text-emerald-400 text-blue-300 text-purple-400 font-mono text-xs font-bold border-b border-slate-700 pb-2 mb-3 uppercase tracking-widest text-[10px] text-slate-400 tracking-wider flex justify-between text-sm">
     </div>
 
     <script src="script.js"></script>

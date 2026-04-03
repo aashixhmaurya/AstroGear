@@ -9,183 +9,180 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/OBJExporter.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Saira+Extra+Condensed:wght@300;400;500&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="flex h-screen w-full">
-
-    <div
-        class="w-[440px] min-w-[440px] panel-bg flex flex-col z-10 h-full overflow-y-auto relative text-slate-100 shadow-2xl">
-        <div class="px-6 py-6 border-b border-slate-700 bg-slate-900 flex items-baseline gap-2">
-            <h1 class="text-3xl font-bold tracking-wider text-white uppercase">Astro</h1>
-            <h1 class="text-3xl font-bold tracking-wider text-blue-400 uppercase">Gears</h1>
+<body class="flex h-screen w-full overflow-hidden">
+    <div id="ui-panel" class="te-bg flex flex-col z-10 h-full relative shadow-2xl shrink-0" style="width: 460px;">
+        <div class="flex-1 w-full h-full overflow-y-auto flex flex-col">
+            <div class="px-10 py-10 border-b border-white/30 shrink-0">
+                <div class="flex items-baseline gap-3">
+                    <h1 class="text-6xl font-light tracking-wide leading-none uppercase">Astro</h1>
+                    <h1 class="text-6xl font-light tracking-wide text-white/70 leading-none uppercase">Gears</h1>
+                </div>
+                <p class="mt-2 text-lg font-light text-white/90 tracking-widest uppercase">Programmable Simulator</p>
+            </div>
+            <div class="px-10 py-6 flex flex-col flex-1">
+                <div id="collision-warning" style="display: none;"
+                    class="bg-white text-[#D52B2A] border border-white p-4 mb-6 flex items-start gap-4 transition-opacity shrink-0">
+                    <span class="text-3xl font-bold mt-[-4px]">!</span>
+                    <div class="text-[1.05rem] leading-tight font-medium">
+                        <strong class="block text-xl font-bold mb-1 uppercase">System Jammed!</strong>
+                        Gears are physically overlapping or conflicting in a mesh loop. Please adjust the layout.
+                    </div>
+                </div>
+                <div class="mt-[-10px] shrink-0">
+                    <div class="section-title">Animation Controls</div>
+                    <div class="flex gap-3 mb-6">
+                        <button id="btn-toggle" class="ui-btn flex-1">Start / Stop</button>
+                        <button id="btn-freeze" class="ui-btn flex-1">Freeze</button>
+                        <button id="btn-reset"
+                            class="ui-btn flex-1 !border-white/30 hover:!border-white/80">Reset</button>
+                    </div>
+                    <div class="property-row">
+                        <label class="property-label">System Speed (RPM):</label>
+                        <div class="property-control">
+                            <input type="number" id="input-base-rpm" value="10" class="ui-input !w-24 text-center">
+                        </div>
+                    </div>
+                    <div class="property-row">
+                        <label class="property-label">Main Gear Direction:</label>
+                        <div class="property-control">
+                            <select id="input-base-direction" class="ui-input !w-24 text-center !px-1">
+                                <option value="1">CW</option>
+                                <option value="-1">CCW</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="shrink-0">
+                    <div class="section-title flex items-center justify-between !border-none !mb-4">
+                        <span>Gear Hierarchy</span>
+                        <div class="flex gap-3">
+                            <button id="btn-add" class="ui-btn !py-1 !px-3 !text-sm">+ Add New</button>
+                            <button id="btn-remove" class="ui-btn !py-1 !px-3 !text-sm">- Remove</button>
+                        </div>
+                    </div>
+                    <div id="gear-list" class="flex flex-col mb-4 max-h-56 overflow-y-auto pr-2"></div>
+                </div>
+                <div id="panel-connection" class="transition-opacity shrink-0">
+                    <div class="section-title">Connection Properties</div>
+                    <div class="property-row">
+                        <label class="property-label">Parent Gear #:</label>
+                        <div class="property-control">
+                            <select id="input-parent" class="ui-input !w-24"></select>
+                        </div>
+                    </div>
+                    <div class="property-row">
+                        <label class="property-label">Axle Connection:</label>
+                        <div class="property-control justify-end w-full"><input type="checkbox" id="input-axle"></div>
+                    </div>
+                    <div class="property-row">
+                        <label class="property-label">Connection Angle:</label>
+                        <div class="property-control">
+                            <span class="ui-btn-small" onclick="stepValue('input-angle', -15)">–</span>
+                            <input type="number" id="input-angle" value="0" class="ui-input !w-16 text-center !px-1">
+                            <span class="ui-btn-small" onclick="stepValue('input-angle', 15)">+</span>
+                        </div>
+                    </div>
+                    <div class="property-row">
+                        <label class="property-label">Auto Position:</label>
+                        <div class="property-control justify-end w-full"><input type="checkbox" id="input-auto-pos"
+                                checked></div>
+                    </div>
+                    <div class="property-row transition-opacity" id="manual-pos-wrapper">
+                        <label class="property-label">X / Y Position (Manual):</label>
+                        <div class="property-control">
+                            <input type="number" id="input-pos-x" step="0.5" class="ui-input !w-16 text-center !px-1">
+                            <input type="number" id="input-pos-y" step="0.5" class="ui-input !w-16 text-center !px-1">
+                        </div>
+                    </div>
+                </div>
+                <div id="panel-properties" class="transition-opacity shrink-0">
+                    <div class="section-title">Gear Properties</div>
+                    <div class="property-row">
+                        <label class="property-label">Number of Teeth (N):</label>
+                        <div class="property-control">
+                            <span class="ui-btn-small" onclick="stepValue('input-teeth', -1)">–</span>
+                            <input type="number" id="input-teeth" value="16" min="6" step="1"
+                                class="ui-input !w-16 text-center !px-1">
+                            <span class="ui-btn-small" onclick="stepValue('input-teeth', 1)">+</span>
+                        </div>
+                    </div>
+                    <div class="property-row">
+                        <label class="property-label">Diametral Pitch (P):</label>
+                        <div class="property-control">
+                            <input type="number" id="input-pitch" min="0.5" step="0.5"
+                                class="ui-input !w-24 text-center">
+                        </div>
+                    </div>
+                    <div class="property-row opacity-80 mt-4 border-t border-white/30 pt-4">
+                        <label class="property-label">Pitch Diameter (D):</label>
+                        <div class="property-control">
+                            <input type="number" id="input-pitch-dia" step="0.1" class="ui-input !w-24 text-center"
+                                readonly disabled>
+                        </div>
+                    </div>
+                    <div class="property-row mt-2">
+                        <label class="property-label">Pressure Angle (PA):</label>
+                        <div class="property-control">
+                            <span class="ui-btn-small" onclick="stepValue('input-pa', -1)">–</span>
+                            <input type="number" id="input-pa" value="20" min="10" max="80" step="1"
+                                class="ui-input !w-16 text-center !px-1">
+                            <span class="ui-btn-small" onclick="stepValue('input-pa', 1)">+</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-10 shrink-0">
+                    <div class="section-title">Display Options</div>
+                    <div class="property-row">
+                        <label class="property-label">Show Gear Labels:</label>
+                        <div class="property-control justify-end w-full"><input type="checkbox" id="toggle-labels"
+                                checked></div>
+                    </div>
+                    <div class="mt-8 flex gap-3">
+                        <button class="ui-btn flex-1" onclick="mockDownload('obj')">Download 3D OBJ</button>
+                        <button class="ui-btn flex-1 !border-white/30 hover:!border-white/80" id="btn-clear-all">Reset
+                            All</button>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="p-6 flex flex-col gap-6 flex-1">
-            <div id="collision-warning" style="display: none;"
-                class="bg-red-900/80 border border-red-500 text-red-100 p-3 rounded-lg shadow-lg flex items-start gap-3 transition-opacity">
-                <span class="text-xl">⚠️</span>
-                <div class="text-[0.8rem] leading-snug">
-                    <strong class="block text-sm mb-1 text-red-300">Collision Detected!</strong>
-                    Gears are physically overlapping. Please adjust the 'Connection Angle' or drag the gear to a
-                    suitable position.
-                </div>
+        <div id="panel-resizer"
+            class="absolute top-0 right-0 w-[6px] h-full cursor-col-resize hover:bg-white/20 transition-colors group flex items-center justify-center z-50">
+            <div class="w-[2px] h-12 bg-white/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
             </div>
-
-            <div>
-                <div class="section-title">Animation Controls</div>
-                <div class="flex gap-2 mb-4">
-                    <button id="btn-toggle" class="ui-btn flex-1">Start / Stop</button>
-                    <button id="btn-freeze" class="ui-btn flex-1">Freeze</button>
-                    <button id="btn-reset"
-                        class="ui-btn flex-1 bg-red-900/30 hover:bg-red-800/50 border-red-800/50 text-red-200">Reset</button>
-                </div>
-                <div class="property-row">
-                    <label class="property-label">System Speed (RPM):</label>
-                    <div class="property-control">
-                        <input type="number" id="input-base-rpm" value="10" class="ui-input !w-24 text-center">
-                    </div>
-                </div>
-                <div class="text-[0.7rem] text-[#8ebce3] mt-1">* Shift + Enter: Set RPM of the selected gear</div>
-            </div>
-
-            <div>
-                <div class="flex items-center justify-between border-b border-slate-700 pb-2 mb-3">
-                    <span class="text-[0.9rem] font-semibold text-slate-100 uppercase tracking-[0.5px]">Gear
-                        Hierarchy</span>
-                    <div class="flex gap-2">
-                        <button id="btn-add"
-                            class="ui-btn !py-1 !px-2 !text-xs bg-emerald-900/30 border-emerald-800/50 text-emerald-300 hover:bg-emerald-800/50">+
-                            Add New</button>
-                        <button id="btn-remove"
-                            class="ui-btn !py-1 !px-2 !text-xs bg-red-900/30 border-red-800/50 text-red-300 hover:bg-red-800/50">-
-                            Remove</button>
-                    </div>
-                </div>
-                <div id="gear-list"
-                    class="flex flex-col mb-2 max-h-48 overflow-y-auto bg-slate-900/50 rounded-lg p-2 border border-slate-700 shadow-inner">
-                </div>
-            </div>
-
-            <div id="panel-connection"
-                class="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50 transition-opacity">
-                <div class="section-title !border-none !mb-4">Connection Properties</div>
-                <div class="property-row">
-                    <label class="property-label">Parent Gear #:</label>
-                    <div class="property-control">
-                        <select id="input-parent" class="ui-input !w-24"></select>
-                    </div>
-                </div>
-                <div class="property-row">
-                    <label class="property-label">Axle Connection:</label>
-                    <div class="property-control"><input type="checkbox" id="input-axle"></div>
-                </div>
-                <div class="property-row">
-                    <label class="property-label">Connection Angle:</label>
-                    <div class="property-control">
-                        <input type="number" id="input-angle" value="0" class="ui-input !w-20 text-center">
-                        <span class="ui-btn-small" onclick="stepValue('input-angle', -15)">–</span>
-                        <span class="ui-btn-small" onclick="stepValue('input-angle', 15)">+</span>
-                    </div>
-                </div>
-                <div class="property-row">
-                    <label class="property-label">Auto Position:</label>
-                    <div class="property-control"><input type="checkbox" id="input-auto-pos" checked></div>
-                </div>
-                <div class="property-row transition-opacity" id="manual-pos-wrapper">
-                    <label class="property-label">X / Y Position (Manual):</label>
-                    <div class="property-control">
-                        <input type="number" id="input-pos-x" step="0.5" class="ui-input !w-16 text-center">
-                        <input type="number" id="input-pos-y" step="0.5" class="ui-input !w-16 text-center">
-                    </div>
-                </div>
-            </div>
-
-            <div id="panel-properties"
-                class="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50 transition-opacity">
-                <div class="section-title !border-none !mb-4">Gear Properties</div>
-                <div class="property-row">
-                    <label class="property-label">Internal Gear:</label>
-                    <div class="property-control"><input type="checkbox" id="input-internal"></div>
-                </div>
-                <div class="property-row">
-                    <label class="property-label">Number of Teeth (N):</label>
-                    <div class="property-control">
-                        <input type="number" id="input-teeth" value="16" min="6" step="1"
-                            class="ui-input !w-16 text-center">
-                        <span class="ui-btn-small" onclick="stepValue('input-teeth', -1)">–</span>
-                        <span class="ui-btn-small" onclick="stepValue('input-teeth', 1)">+</span>
-                    </div>
-                </div>
-                <div class="property-row">
-                    <label class="property-label">Diametral Pitch (P):</label>
-                    <div class="property-control">
-                        <input type="number" id="input-pitch" min="0.5" step="0.5" class="ui-input !w-24 text-center">
-                    </div>
-                </div>
-                <div class="property-row opacity-60 mt-2 border-t border-slate-700 pt-3">
-                    <label class="property-label">Pitch Diameter (D):</label>
-                    <div class="property-control">
-                        <input type="number" id="input-pitch-dia" step="0.1" class="ui-input !w-24 text-center" readonly
-                            disabled>
-                    </div>
-                </div>
-                <div class="property-row mt-2">
-                    <label class="property-label">Pressure Angle (PA):</label>
-                    <div class="property-control">
-                        <input type="number" id="input-pa" value="20" min="10" max="80" step="1"
-                            class="ui-input !w-16 text-center">
-                        <span class="ui-btn-small" onclick="stepValue('input-pa', -1)">–</span>
-                        <span class="ui-btn-small" onclick="stepValue('input-pa', 1)">+</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-6">
-                <div class="section-title">Display Options</div>
-                <div class="property-row">
-                    <label class="property-label">Show Plane / Floor:</label>
-                    <div class="property-control"><input type="checkbox" id="toggle-grid" checked></div>
-                </div>
-                <div class="property-row">
-                    <label class="property-label">Show Gear Labels:</label>
-                    <div class="property-control"><input type="checkbox" id="toggle-labels" checked></div>
-                </div>
-                <div class="mt-6 flex gap-2">
-                    <button class="ui-btn flex-1 bg-slate-700 hover:bg-slate-600" onclick="mockDownload('obj')">Download
-                        3D OBJ</button>
-                    <button class="ui-btn flex-1 bg-slate-700 hover:bg-slate-600" id="btn-clear-all">Reset All</button>
-                </div>
-            </div>
-
         </div>
     </div>
-
-    <div id="canvas-wrapper">
+    <div id="canvas-wrapper" class="flex-1 min-w-0">
         <div id="canvas-container"></div>
         <div id="labels-container"></div>
-
-        <div id="physics-info-panel"
-            class="absolute top-6 right-6 bg-slate-900/90 border border-slate-700 text-slate-200 p-4 rounded-lg shadow-2xl backdrop-blur-sm w-[320px] hidden z-40 pointer-events-none">
+        <div id="telemetry-panel"
+            class="absolute top-3 right-3 w-48 te-bg border border-white/30 shadow-2xl flex-col z-40 hidden pointer-events-none">
+            <div class="px-2 py-1 border-b border-white/30 bg-black/10">
+                <span class="text-[1.1rem] font-medium tracking-widest uppercase text-white">Live Telemetry</span>
+            </div>
+            <div id="telemetry-content"
+                class="px-2 py-1.5 flex flex-col text-[0.95rem] font-light text-white/90 uppercase tracking-wider">
+            </div>
         </div>
-
-        <div class="absolute bottom-6 left-6 flex flex-col items-center gap-2 z-50">
+        <div class="absolute bottom-4 left-4 flex flex-col items-center gap-3 z-50">
             <label class="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" id="edit-mode-toggle" class="sr-only peer">
                 <div
-                    class="w-12 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 shadow-xl border border-slate-400 peer-checked:border-indigo-700">
+                    class="w-14 h-7 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#D52B2A] shadow-xl border border-slate-400 peer-checked:border-[#b02222]">
                 </div>
             </label>
             <span
-                class="text-[10px] font-bold text-slate-800 bg-white/90 px-2 py-1 rounded shadow uppercase tracking-wide">Edit
-                Mode</span>
+                class="text-[12px] font-bold text-slate-800 bg-white/90 px-3 py-1.5 rounded shadow-sm uppercase tracking-widest border border-slate-200"
+                style="font-family: 'Saira Extra Condensed', sans-serif;">edit mode</span>
         </div>
     </div>
-
     <div style="display: none;"
-        class="opacity-90 text-blue-200 opacity-70 opacity-50 pointer-events-none text-amber-400 text-rose-400 text-emerald-400 text-blue-300 text-purple-400 font-mono text-xs font-bold border-b border-slate-700 pb-2 mb-3 uppercase tracking-widest text-[10px] text-slate-400 tracking-wider flex justify-between text-sm">
+        class="opacity-90 opacity-70 flex-col hidden flex border-b border-white/15 py-0.5 pt-0.5 text-white/60 text-[0.85rem] font-medium text-white uppercase tracking-wider">
     </div>
-
     <script src="script.js"></script>
 </body>
 
